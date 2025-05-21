@@ -1,27 +1,27 @@
 # DMS-Laravel-12-React-Starter-Kit
 
-Aplikasi Sistem Manajemen Dokumen berbasis web yang dibuat menggunakan Laravel React Starter Kit. Aplikasi ini memungkinkan pengguna untuk mengelola dokumen dengan fitur versioning, penandaan (tagging), dan pengelolaan masa berlaku dokumen.
+A web-based Document Management System application was built using the Laravel 12 React Starter Kit. This application allows users to manage documents with versioning, tagging, and document expiration management features.
 
-## Fitur Utama
+## Key Features
 
-### Manajemen Dokumen
-- Upload berbagai jenis dokumen (PDF, Word, Excel, PowerPoint)
-- Versi dokumen untuk melacak perubahan
-- Tag untuk kategorisasi dokumen
-- Masa berlaku dokumen dengan notifikasi kadaluarsa
-- Preview dokumen langsung dalam aplikasi
-- Download dokumen
+### Document Management
+- Upload various document types (PDF, Word, Excel, PowerPoint)
+- Document versioning to track changes
+- Tags for document categorization
+- Document expiration with expiration notifications
+- Preview documents directly in the app
+- Document download
 
-### Manajemen Pengguna
-- Peran pengguna (admin & user)
-- Admin dapat membuat, mengedit, dan menghapus pengguna
-- Status pengguna (aktif/tidak aktif)
-- Autentikasi dan otorisasi berbasis peran
+### User Management
+- User roles (admin & user)
+- Admin can create, edit, and delete users
+- User status (active/inactive)
+- Role-based authentication and authorization
 
-## Teknologi yang Digunakan
+### Technology Used
 
 ### Backend
-- Laravel
+- Laravel 12
 - MySQL
 - PHP
 
@@ -32,47 +32,47 @@ Aplikasi Sistem Manajemen Dokumen berbasis web yang dibuat menggunakan Laravel R
 - Tailwind CSS
 - shadcn/ui components
 
-## Persyaratan Sistem
+## System Requirements
 
-- PHP 8.1 atau lebih tinggi
-- Node.js 16 atau lebih tinggi
-- MySQL 5.7 atau lebih tinggi
+- PHP 8.1 or higher
+- Node.js 16 or higher
+- MySQL 5.7 or higher
 - Composer
-- NPM atau Yarn
+- NPM or Yarn
 
-## Instalasi
+## Installation
 
-### Langkah-langkah Instalasi
+### Installation Steps
 
-1. Clone repositori ini
+1. Clone this repository
    ```bash
-   git clone [link-repositori]
-   cd [nama-folder]
+   git clone [link-repository]
+   cd [folder-name]
    ```
 
-2. Instal dependensi PHP
+2. Install PHP dependencies
    ```bash
    composer install
    ```
 
-3. Instal dependensi JavaScript
+3. Install JavaScript dependencies
    ```bash
    npm install
    ```
 
-4. Salin file .env.example menjadi .env
+4. Copy the .env.example file to .env
    ```bash
    cp .env.example .env
    ```
 
-5. Buat kunci aplikasi
+5. Create an application key
    ```bash
    php artisan key:generate
    ```
 
-6. Konfigurasi database di file .env
+6. Configure the database in the .env file
 
-7. Jalankan migrasi database
+7. Run database migration
    ```bash
    php artisan migrate --seed
    ```
@@ -87,46 +87,40 @@ Aplikasi Sistem Manajemen Dokumen berbasis web yang dibuat menggunakan Laravel R
    npm run build
    ```
 
-10. Jalankan aplikasi
+10. Run the application
     ```bash
     php artisan serve
     ```
 
-11. Buka aplikasi di browser: http://localhost:8000
+11. Open the application in a browser: http://localhost:8000
 
-## Penggunaan
+## Usage
 
-### Login Admin
+### Admin Login
 - Email: admin@example.com
 - Password: password
 
-### Login User
+### User Login
 - Email: user@example.com
 - Password: password
 
-## Struktur Proyek
+## Project Structure
 
-- `app/` - Kode backend Laravel
-- `resources/js/` - Kode frontend React/TypeScript
-- `resources/js/pages/` - Halaman-halaman aplikasi
-- `resources/js/components/` - Komponen UI yang dapat digunakan kembali
-- `database/migrations/` - Migrasi basis data
+- `app/` - Laravel backend code
+- `resources/js/` - React/TypeScript frontend code
+- `resources/js/pages/` - Application pages
+- `resources/js/components/` - Reusable UI components
+- `database/migrations/` - Database migrations
 
-## Fitur Tampilan
+## Feature View
 
-### Halaman Admin
-- Dashboard statistik
-- Manajemen pengguna
-- Manajemen dokumen
+### Admin page
+- Statistics dashboard
+- User management
+- Document management
 
-### Halaman User
-- Daftar dokumen yang tersedia
-- Detail dan preview dokumen
+### User Page
+- List of available documents
+- Document details and previews
 
-## Lisensi
-
-[Sesuaikan dengan lisensi yang Anda gunakan]
-
-## Kontak
-
-[Informasi kontak pengembang] 
+## MIT license
