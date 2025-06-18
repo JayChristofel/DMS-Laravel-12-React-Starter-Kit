@@ -16,16 +16,7 @@ import { id } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { TagInput } from '@/components/ui/tag-input';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Document Management',
-        href: '/documents',
-    },
-    {
-        title: 'Edit Document',
-        href: '/documents/edit',
-    },
-];
+
 
 interface Tag {
     id: number;
@@ -299,6 +290,17 @@ export default function DocumentEdit({ document, tags, auth }: Props) {
             </AppLayout>
         );
     }
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            title: 'Document Management',
+            href: '/documents',
+        },
+        {
+            title: document.title,
+            href: `/documents/${document.id}`,
+        },
+    ];
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -597,7 +599,7 @@ export default function DocumentEdit({ document, tags, auth }: Props) {
                                 variant="outline"
                                 asChild
                             >
-                                <Link href={`/documents/${document.id}`}>Back to Detail</Link>
+                                <Link href={`/documents`}>Back to Detail</Link>
                             </Button>
                             <Button
                                 type="submit"

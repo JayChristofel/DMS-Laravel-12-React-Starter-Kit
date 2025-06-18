@@ -96,8 +96,10 @@ const formatLocalDate = (dateString: string, includeTime: boolean = false) => {
 
 export default function DocumentShow({ document, auth }: Props) {
     const fileType = getFileType(document.file_path);
-    const fileUrl = `/storage/${document.file_path}`;
+    const fileName = document.file_path.split('/').pop();
+    const fileUrl = `/storage/documents/${fileName}`;
     const [previewHeight, setPreviewHeight] = useState(500);
+    const [previewError, setPreviewError] = useState(false);
     
     useEffect(() => {
         const handleResize = () => {
@@ -113,16 +115,16 @@ export default function DocumentShow({ document, auth }: Props) {
     if (auth.user.role !== 'admin' && auth.user.role !== 'user') {
         return (
             <AppLayout>
-                <Head title="Akses Ditolak" />
+                <Head title="Access Denied" />
                 <div className="flex flex-col items-center justify-center p-10 text-center">
                     <div className="rounded-full bg-destructive/10 p-4 mb-4">
                         <AlertCircle className="h-10 w-10 text-destructive" />
                     </div>
-                    <h2 className="text-2xl font-bold mb-2">Akses Ditolak</h2>
-                    <p className="text-muted-foreground mb-6">Anda tidak memiliki izin untuk melihat dokumen ini.</p>
+                    <h2 className="text-2xl font-bold mb-2">Access Denied</h2>
+                    <p className="text-muted-foreground mb-6">You do not have permission to view this document.</p>
                     <Button asChild>
                         <Link href="/dashboard">
-                            Kembali ke Dashboard
+                            Back to Dashboard
                         </Link>
                     </Button>
                 </div>
@@ -141,7 +143,7 @@ export default function DocumentShow({ document, auth }: Props) {
                                 <div className="flex items-start justify-between">
                                     <div>
                                         <CardTitle className="text-xl">{document.title}</CardTitle>
-                                        <CardDescription>Informasi dokumen</CardDescription>
+                                        <CardDescription>Document Information</CardDescription>
                                     </div>
                                     <div className="flex items-center justify-center w-12 h-12 bg-muted/50 rounded">
                                         {getFileIcon(fileType)}
@@ -158,15 +160,15 @@ export default function DocumentShow({ document, auth }: Props) {
                                     {(() => {
                                         const status = getStatus(document.expired_at);
                                         if (status === 'expired') return <Badge variant="destructive">Expired</Badge>;
-                                        if (status === 'expiring') return <Badge variant="outline">Segera Kadaluarsa</Badge>;
-                                        return <Badge variant="default">Aktif</Badge>;
+                                        if (status === 'expiring') return <Badge variant="outline">Expiring Soon</Badge>;
+                                        return <Badge variant="default">Active</Badge>;
                                     })()}
                                 </div>
                                 
                                 {document.description && (
                                     <div>
                                         <p className="text-sm font-medium text-muted-foreground mb-1">
-                                            <Info className="inline-block h-4 w-4 mr-1" /> Deskripsi
+                                            <Info className="inline-block h-4 w-4 mr-1" /> Description
                                         </p>
                                         <p className="text-sm">{document.description}</p>
                                     </div>
@@ -174,14 +176,14 @@ export default function DocumentShow({ document, auth }: Props) {
                                 
                                 <div>
                                     <p className="text-sm font-medium text-muted-foreground mb-1">
-                                        <Calendar className="inline-block h-4 w-4 mr-1" /> Tanggal Kadaluarsa
+                                        <Calendar className="inline-block h-4 w-4 mr-1" /> Expired Date
                                     </p>
                                     <p className="text-sm">{document.expired_at ? formatLocalDate(document.expired_at) : '-'}</p>
                                 </div>
                                 
                                 <div>
                                     <p className="text-sm font-medium text-muted-foreground mb-1">
-                                        <Clock className="inline-block h-4 w-4 mr-1" /> Tanggal Upload
+                                        <Clock className="inline-block h-4 w-4 mr-1" /> Upload Date
                                     </p>
                                     <p className="text-sm">{formatLocalDate(document.created_at, true)}</p>
                                 </div>
@@ -208,7 +210,7 @@ export default function DocumentShow({ document, auth }: Props) {
                             <Card>
                                 <CardHeader>
                                     <CardTitle className="text-lg flex items-center gap-2">
-                                        <History className="h-5 w-5" /> Versi Dokumen
+                                        <History className="h-5 w-5" /> Document Versions
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent>
@@ -227,9 +229,9 @@ export default function DocumentShow({ document, auth }: Props) {
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center gap-2">
-                                                        <h4 className="font-medium text-sm">Versi {ver.version}</h4>
+                                                        <h4 className="font-medium text-sm">Version {ver.version}</h4>
                                                         {document.versions && ver === document.versions[document.versions.length - 1] && (
-                                                            <Badge variant="secondary" className="text-xs">Terbaru</Badge>
+                                                            <Badge variant="secondary" className="text-xs">Latest</Badge>
                                                         )}
                                                     </div>
                                                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
@@ -243,7 +245,11 @@ export default function DocumentShow({ document, auth }: Props) {
                                                     asChild
                                                     className="flex-shrink-0"
                                                 >
-                                                    <a href={`/storage/${ver.file_path}`} target="_blank" rel="noopener noreferrer">
+                                                    <a 
+                                                        href={`/storage/documents/${ver.file_path.split('/').pop()}`} 
+                                                        target="_blank" 
+                                                        rel="noopener noreferrer"
+                                                    >
                                                         <Download className="h-4 w-4" />
                                                     </a>
                                                 </Button>
@@ -259,36 +265,62 @@ export default function DocumentShow({ document, auth }: Props) {
                         <Card className="h-full">
                             <CardHeader>
                                 <CardTitle className="text-lg flex items-center">
-                                    <Eye className="h-5 w-5 mr-2" /> Preview Dokumen
+                                    <Eye className="h-5 w-5 mr-2" /> Document Preview
                                 </CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="min-h-[400px] border rounded-md bg-muted/10">
-                                    {fileType === 'pdf' && (
-                                        <iframe 
-                                            src={fileUrl} 
-                                            title="PDF Preview" 
-                                            className="w-full rounded-md" 
-                                            style={{ height: `${previewHeight}px` }}
-                                        />
-                                    )}
-                                    {(fileType === 'word' || fileType === 'excel' || fileType === 'ppt') && (
+                                    {fileType === 'pdf' && !previewError ? (
+                                        <div className="relative">
+                                            <iframe 
+                                                src={fileUrl} 
+                                                title="PDF Preview" 
+                                                className="w-full rounded-md" 
+                                                style={{ height: `${previewHeight}px` }}
+                                                onError={() => setPreviewError(true)}
+                                                onLoad={(e) => {
+                                                    // Check if iframe loaded correctly
+                                                    try {
+                                                        const iframe = e.target as HTMLIFrameElement;
+                                                        if (iframe.contentDocument?.body.innerHTML.includes('error')) {
+                                                            setPreviewError(true);
+                                                        }
+                                                    } catch (error) {
+                                                        console.error('Error checking iframe content:', error);
+                                                    }
+                                                }}
+                                            />
+                                        </div>
+                                    ) : (fileType === 'word' || fileType === 'excel' || fileType === 'ppt') && !previewError ? (
                                         <iframe 
                                             src={`https://view.officeapps.live.com/op/embed.aspx?src=${window.location.origin}${fileUrl}`} 
                                             title="Office Preview" 
                                             className="w-full rounded-md" 
                                             style={{ height: `${previewHeight}px` }}
+                                            onError={() => setPreviewError(true)}
                                         />
-                                    )}
-                                    {fileType === 'other' && (
+                                    ) : (
                                         <div className="flex flex-col items-center justify-center h-full min-h-[400px]">
                                             {getFileIcon(fileType)}
-                                            <p className="mt-4 text-muted-foreground">Preview tidak tersedia untuk tipe file ini</p>
+                                            <p className="mt-4 text-muted-foreground">
+                                                {previewError 
+                                                    ? "Failed to load document preview. The document may be unavailable or in an unsupported format." 
+                                                    : "Preview not available for this file type"}
+                                            </p>
                                             <Button asChild variant="outline" className="mt-4">
                                                 <a href={fileUrl} target="_blank" rel="noopener noreferrer">
-                                                    <Download className="h-4 w-4 mr-1" /> Download untuk melihat
+                                                    <Download className="h-4 w-4 mr-1" /> Download to view
                                                 </a>
                                             </Button>
+                                            {previewError && (
+                                                <Button 
+                                                    variant="secondary" 
+                                                    className="mt-2"
+                                                    onClick={() => setPreviewError(false)}
+                                                >
+                                                    Try Again
+                                                </Button>
+                                            )}
                                         </div>
                                     )}
                                 </div>

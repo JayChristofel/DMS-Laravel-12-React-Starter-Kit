@@ -7,12 +7,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { FileUp, Calendar as CalendarIcon, FileText, AlertCircle, File, Upload, FileArchive, X } from 'lucide-react';
+import { FileUp, Calendar as CalendarIcon, FileText, AlertCircle, File, Upload, FileArchive, X, CircleAlert } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { BreadcrumbItem } from '@/types';
 import { Calendar } from '@/components/ui/calendar';
-import { format, parseISO } from 'date-fns';
-import { id } from 'date-fns/locale';
+import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { TagInput } from '@/components/ui/tag-input';
 
@@ -22,7 +21,7 @@ const breadcrumbs: BreadcrumbItem[] = [
         href: '/documents',
     },
     {
-        title: 'Upload Dokumen',
+        title: 'Upload Document',
         href: '/documents/create',
     },
 ];
@@ -72,19 +71,8 @@ export default function DocumentCreate({ tags, auth }: Props) {
         description: '',
     });
 
-    const updateForm = (field: string, value: any) => {
+    const updateForm = (field: string, value: unknown) => {
         setForm(prev => ({ ...prev, [field]: value }));
-    };
-
-    const getTagIdByName = (tagName: string): number | null => {
-        const tag = tags.find(t => t.name.toLowerCase() === tagName.toLowerCase());
-        return tag ? tag.id : null;
-    };
-
-    const getTagIds = (tagNames: string[]): number[] => {
-        return tagNames
-            .map(name => getTagIdByName(name))
-            .filter((id): id is number => id !== null);
     };
 
     const handleTagsChange = (newSelectedTags: string[]) => {
@@ -99,7 +87,7 @@ export default function DocumentCreate({ tags, auth }: Props) {
         }
     };
 
-    const processFile = (file: File) => {
+    const processFile = useCallback((file: File) => {
         updateForm('file', file);
         if (file.type === 'application/pdf') {
             const url = URL.createObjectURL(file);
@@ -107,7 +95,7 @@ export default function DocumentCreate({ tags, auth }: Props) {
         } else {
             setPreviewUrl(null);
         }
-    };
+    }, []);
 
     const handleDrag = useCallback((e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -127,30 +115,63 @@ export default function DocumentCreate({ tags, auth }: Props) {
         if (e.dataTransfer.files && e.dataTransfer.files[0]) {
             processFile(e.dataTransfer.files[0]);
         }
-    }, []);
+    }, [processFile]);
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
+        
+        if (!form.title) {
+            toast({ 
+                title: "Error", 
+                description: "Please enter a document title", 
+                variant: "destructive" 
+            });
+            return;
+        }
+        
+        if (!form.file) {
+            toast({ 
+                title: "Error", 
+                description: "Please upload a file", 
+                variant: "destructive" 
+            });
+            return;
+        }
+        
         if (isSubmitting) return;
         
         setIsSubmitting(true);
         
         const formData = new FormData();
         formData.append('title', form.title);
-        if (form.file) {
-            formData.append('file', form.file);
-        }
-        formData.append('expired_at', form.expired_at);
-        formData.append('description', form.description);
+        formData.append('file', form.file);
         
-        formData.append('tags_string', selectedTags.join(','));
+        if (form.expired_at) {
+            formData.append('expired_at', form.expired_at);
+        }
+        
+        if (form.description) {
+            formData.append('description', form.description);
+        }
+        
+        if (selectedTags.length > 0) {
+            formData.append('tags_string', selectedTags.join(','));
+        }
+        
+        console.log('Sending formData:', {
+            title: form.title,
+            file: form.file.name,
+            expired_at: form.expired_at,
+            description: form.description ? 'Yes' : 'No',
+            tags: selectedTags
+        });
         
         router.post('/documents', formData, {
             forceFormData: true,
             onSuccess: () => {
                 toast({ 
-                    title: "Berhasil", 
-                    description: "Dokumen berhasil disimpan" 
+                    title: "Success", 
+                    description: "Document has been saved successfully" 
                 });
                 setSelectedTags([]);
                 setPreviewUrl(null);
@@ -166,8 +187,8 @@ export default function DocumentCreate({ tags, auth }: Props) {
             onError: (errors) => {
                 console.error('Error uploading document:', errors);
                 toast({
-                    title: "Gagal", 
-                    description: "Terjadi kesalahan saat menyimpan dokumen", 
+                    title: "Failed", 
+                    description: Object.values(errors).join(', ') || "An error occurred while saving the document", 
                     variant: "destructive"
                 });
                 setIsSubmitting(false);
@@ -212,11 +233,11 @@ export default function DocumentCreate({ tags, auth }: Props) {
     if (auth.user.role !== 'admin') {
         return (
             <AppLayout>
-                <Head title="Upload Dokumen" />
+                <Head title="Upload Document" />
                 <div className="p-8 text-center">
                     <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-2" />
-                    <h3 className="text-lg font-semibold mb-2">Akses Ditolak</h3>
-                    <p>Anda tidak memiliki izin untuk mengupload dokumen.</p>
+                    <h3 className="text-lg font-semibold mb-2">Access Denied</h3>
+                    <p>You do not have permission to upload documents.</p>
                 </div>
             </AppLayout>
         );
@@ -224,7 +245,7 @@ export default function DocumentCreate({ tags, auth }: Props) {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Upload Dokument" />
+            <Head title="Upload Document" />
 
             <div className="flex flex-col lg:flex-row gap-6 p-4">
                 <div className="w-full lg:w-1/2">
@@ -262,10 +283,10 @@ export default function DocumentCreate({ tags, auth }: Props) {
                                         <input
                                             id="fileInput"
                                             type="file"
-                                            className="hidden"
+                                            className="sr-only"
                                             onChange={handleFileChange}
                                             accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
-                                            required
+                                            aria-label="File upload"
                                         />
                                         <div className="flex flex-col items-center justify-center text-center">
                                             {getFileIcon()}
@@ -319,6 +340,12 @@ export default function DocumentCreate({ tags, auth }: Props) {
                                             )}
                                         </div>
                                     </div>
+                                    {!form.file && (
+                                        <div className="flex items-center gap-2 rounded-md p-2 bg-rose-300 justify-start mt-2 text-destructive">
+                                            <CircleAlert className="h-4 w-4" />
+                                            <p className="text-sm">Please select a file</p>
+                                        </div>
+                                    )}
                                 </div>
                                 <div>
                                     <Label htmlFor="expired_at" className="text-sm font-medium flex items-center gap-1">
@@ -338,7 +365,7 @@ export default function DocumentCreate({ tags, auth }: Props) {
                                         >
                                             <CalendarIcon className="mr-2 h-4 w-4" />
                                             {selectedDate ? (
-                                                format(selectedDate, 'dd MMMM yyyy', { locale: id })
+                                                format(selectedDate, 'dd MMMM yyyy')
                                             ) : (
                                                 <span>Choose expired date</span>
                                             )}
@@ -352,7 +379,6 @@ export default function DocumentCreate({ tags, auth }: Props) {
                                                     selected={selectedDate}
                                                     onSelect={handleDateChange}
                                                     initialFocus
-                                                    locale={id}
                                                 />
                                             </div>
                                         )}
@@ -395,7 +421,7 @@ export default function DocumentCreate({ tags, auth }: Props) {
                                 type="submit"
                                 form="docForm"
                                 className="flex items-center gap-2"
-                                disabled={isSubmitting}
+                                disabled={isSubmitting || !form.file || !form.title}
                             >
                                 {isSubmitting ? 'Saving...' : 'Save Document'}
                             </Button>
