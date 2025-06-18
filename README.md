@@ -20,12 +20,12 @@ A web-based Document Management System application was built using the Laravel 1
 
 ### Technology Used
 
-### Backend
+#### Backend
 - Laravel 12
 - MySQL
 - PHP
 
-### Frontend
+#### Frontend
 - React
 - TypeScript
 - Inertia.js
