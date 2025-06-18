@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminUserSeeder::class,
             DummyDocumentSeeder::class,
-            NotificationEmailSeeder::class,
         ]);
         
         User::factory(10)->create([
